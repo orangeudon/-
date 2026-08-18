@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사과 게임 🍎</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 20px 0 5px;
+        }
+
+        #score {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        #game {
+            width: 900px;
+            height: 600px;
+            max-width: 95vw;
+            margin: auto;
+            position: relative;
+            background: #fff8dc;
+            border: 3px solid #333;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .apple {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #e53935;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+            box-shadow: 0 3px 5px #999;
+        }
+
+        .apple::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            top: -3px;
+            right: 7px;
+            transform: rotate(-25deg);
+        }
+
+        #selection {
+            position: absolute;
+            border: 2px dashed #1976d2;
+            background: rgba(33, 150, 243, 0.15);
+            display: none;
+            pointer-events: none;
+        }
+
+        #message {
+            height: 30px;
+            margin-top: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🍎 사과 게임 🍎</h1>
+    <div id="score">점수: 0</div>
+
+    <div id="game">
+        <div id="selection"></div>
+    </div>
+
+    <div id="message">
+        마우스로 드래그해서 숫자의 합을 10으로 만들어 보세요!
+    </div>
+
+<script>
+
+const game = document.getElementById("game");
+const selection = document.getElementById("selection");
+const scoreText = document.getElementById("score");
+const message = document.getElementById("message");
+
+let apples = [];
+let score = 0;
+
+const appleCount = 50;
+
+
+// -------------------------
+// 사과 만들기
+// -------------------------
+
+function createApples() {
+
+    for (let i = 0; i < appleCount; i++) {
+
+        const apple = document.createElement("div");
+
+        apple.className = "apple";
+
+        apple.textContent =
+            Math.floor(Math.random() * 9) + 1;
+
+        apple.dataset.number = apple.textContent;
+
+        apple.style.left =
+            Math.random() * 840 + "px";
+
+        apple.style.top =
+            Math.random() * 530 + "px";
+
+        game.appendChild(apple);
+
+        apples.push(apple);
+    }
+}
+
+createApples();
+
+
+// -------------------------
+// 마우스 드래그
+// -------------------------
+
+let dragging = false;
+
+let startX = 0;
+let startY = 0;
+
+
+game.addEventListener("mousedown", function(event) {
+
+    if (event.target.classList.contains("apple")) {
+
+        dragging = true;
+
+        const rect = game.getBoundingClientRect();
+
+        startX = event.clientX - rect.left;
+        startY = event.clientY - rect.top;
+
+        selection.style.left = startX + "px";
+        selection.style.top = startY + "px";
+
+        selection.style.width = "0px";
+        selection.style.height = "0px";
+
+        selection.style.display = "block";
+    }
+});
+
+
+// -------------------------
+// 드래그 중
+// -------------------------
+
+game.addEventListener("mousemove", function(event) {
+
+    if (!dragging) return;
+
+    const rect = game.getBoundingClientRect();
+
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    const x = Math.min(startX, mouseX);
+    const y = Math.min(startY, mouseY);
+
+    const width = Math.abs(mouseX - startX);
+    const height = Math.abs(mouseY - startY);
+
+    selection.style.left = x + "px";
+    selection.style.top = y + "px";
+
+    selection.style.width = width + "px";
+    selection.style.height = height + "px";
+});
+
+
+// -------------------------
+// 드래그 끝
+// -------------------------
+
+game.addEventListener("mouseup", function() {
+
+    if (!dragging) return;
+
+    dragging = false;
+
+    selection.style.display = "none";
+
+    const selected = [];
+
+    const selectionRect =
+        selection.getBoundingClientRect();
+
+    apples.forEach(function(apple) {
+
+        if (apple.style.display === "none")
+            return;
+
+        const appleRect =
+            apple.getBoundingClientRect();
+
+        const inside =
+            appleRect.left >= selectionRect.left &&
+            appleRect.right <= selectionRect.right &&
+            appleRect.top >= selectionRect.top &&
+            appleRect.bottom <= selectionRect.bottom;
+
+        if (inside) {
+            selected.push(apple);
+        }
+    });
+
+
+    // -------------------------
+    // 숫자 합 계산
+    // -------------------------
+
+    let total = 0;
+
+    selected.forEach(function(apple) {
+
+        total += Number(
+            apple.dataset.number
+        );
+
+    });
+
+
+    if (selected.length === 0) {
+
+        message.textContent =
+            "사과를 선택해 주세요! 🍎";
+
+        return;
+    }
+
+
+    if (total === 10) {
+
+        selected.forEach(function(apple) {
+
+            apple.style.display = "none";
+
+        });
+
+        score += selected.length;
+
+        scoreText.textContent =
+            "점수: " + score;
+
+        message.textContent =
+            "🎉 성공! 합이 10입니다!";
+
+    } else {
+
+        message.textContent =
+            "❌ 합이 " + total +
+            "입니다. 10을 만들어야 해요!";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
