@@ -94,198 +94,154 @@
         마우스로 드래그해서 숫자의 합을 10으로 만들어 보세요!
     </div>
 
-<script>
+    <script>
+        const game = document.getElementById("game");
+        const selection = document.getElementById("selection");
+        const scoreText = document.getElementById("score");
+        const message = document.getElementById("message");
 
-const game = document.getElementById("game");
-const selection = document.getElementById("selection");
-const scoreText = document.getElementById("score");
-const message = document.getElementById("message");
+        let apples = [];
+        let score = 0;
 
-let apples = [];
-let score = 0;
+        const appleCount = 50;
 
-const appleCount = 50;
+        // 사과 만들기
+        for (let i = 0; i < appleCount; i++) {
+            const apple = document.createElement("div");
 
+            apple.className = "apple";
 
-// -------------------------
-// 사과 만들기
-// -------------------------
+            const number = Math.floor(Math.random() * 9) + 1;
 
-function createApples() {
+            apple.textContent = number;
+            apple.dataset.number = number;
 
-    for (let i = 0; i < appleCount; i++) {
+            apple.style.left =
+                Math.random() * 840 + "px";
 
-        const apple = document.createElement("div");
+            apple.style.top =
+                Math.random() * 530 + "px";
 
-        apple.className = "apple";
-
-        apple.textContent =
-            Math.floor(Math.random() * 9) + 1;
-
-        apple.dataset.number = apple.textContent;
-
-        apple.style.left =
-            Math.random() * 840 + "px";
-
-        apple.style.top =
-            Math.random() * 530 + "px";
-
-        game.appendChild(apple);
-
-        apples.push(apple);
-    }
-}
-
-createApples();
-
-
-// -------------------------
-// 마우스 드래그
-// -------------------------
-
-let dragging = false;
-
-let startX = 0;
-let startY = 0;
-
-
-game.addEventListener("mousedown", function(event) {
-
-    if (event.target.classList.contains("apple")) {
-
-        dragging = true;
-
-        const rect = game.getBoundingClientRect();
-
-        startX = event.clientX - rect.left;
-        startY = event.clientY - rect.top;
-
-        selection.style.left = startX + "px";
-        selection.style.top = startY + "px";
-
-        selection.style.width = "0px";
-        selection.style.height = "0px";
-
-        selection.style.display = "block";
-    }
-});
-
-
-// -------------------------
-// 드래그 중
-// -------------------------
-
-game.addEventListener("mousemove", function(event) {
-
-    if (!dragging) return;
-
-    const rect = game.getBoundingClientRect();
-
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-
-    const x = Math.min(startX, mouseX);
-    const y = Math.min(startY, mouseY);
-
-    const width = Math.abs(mouseX - startX);
-    const height = Math.abs(mouseY - startY);
-
-    selection.style.left = x + "px";
-    selection.style.top = y + "px";
-
-    selection.style.width = width + "px";
-    selection.style.height = height + "px";
-});
-
-
-// -------------------------
-// 드래그 끝
-// -------------------------
-
-game.addEventListener("mouseup", function() {
-
-    if (!dragging) return;
-
-    dragging = false;
-
-    selection.style.display = "none";
-
-    const selected = [];
-
-    const selectionRect =
-        selection.getBoundingClientRect();
-
-    apples.forEach(function(apple) {
-
-        if (apple.style.display === "none")
-            return;
-
-        const appleRect =
-            apple.getBoundingClientRect();
-
-        const inside =
-            appleRect.left >= selectionRect.left &&
-            appleRect.right <= selectionRect.right &&
-            appleRect.top >= selectionRect.top &&
-            appleRect.bottom <= selectionRect.bottom;
-
-        if (inside) {
-            selected.push(apple);
+            game.appendChild(apple);
+            apples.push(apple);
         }
-    });
 
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
 
-    // -------------------------
-    // 숫자 합 계산
-    // -------------------------
+        // 마우스 누르기
+        game.addEventListener("mousedown", function(event) {
+            if (!event.target.classList.contains("apple")) {
+                return;
+            }
 
-    let total = 0;
+            dragging = true;
 
-    selected.forEach(function(apple) {
+            const rect = game.getBoundingClientRect();
 
-        total += Number(
-            apple.dataset.number
-        );
+            startX = event.clientX - rect.left;
+            startY = event.clientY - rect.top;
 
-    });
-
-
-    if (selected.length === 0) {
-
-        message.textContent =
-            "사과를 선택해 주세요! 🍎";
-
-        return;
-    }
-
-
-    if (total === 10) {
-
-        selected.forEach(function(apple) {
-
-            apple.style.display = "none";
-
+            selection.style.left = startX + "px";
+            selection.style.top = startY + "px";
+            selection.style.width = "0px";
+            selection.style.height = "0px";
+            selection.style.display = "block";
         });
 
-        score += selected.length;
+        // 마우스 이동
+        game.addEventListener("mousemove", function(event) {
+            if (!dragging) {
+                return;
+            }
 
-        scoreText.textContent =
-            "점수: " + score;
+            const rect = game.getBoundingClientRect();
 
-        message.textContent =
-            "🎉 성공! 합이 10입니다!";
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
 
-    } else {
+            const x = Math.min(startX, mouseX);
+            const y = Math.min(startY, mouseY);
 
-        message.textContent =
-            "❌ 합이 " + total +
-            "입니다. 10을 만들어야 해요!";
+            const width = Math.abs(mouseX - startX);
+            const height = Math.abs(mouseY - startY);
 
-    }
+            selection.style.left = x + "px";
+            selection.style.top = y + "px";
+            selection.style.width = width + "px";
+            selection.style.height = height + "px";
+        });
 
-});
+        // 마우스 놓기
+        game.addEventListener("mouseup", function() {
+            if (!dragging) {
+                return;
+            }
 
-</script>
+            dragging = false;
+
+            const selectionRect =
+                selection.getBoundingClientRect();
+
+            selection.style.display = "none";
+
+            const selected = [];
+
+            apples.forEach(function(apple) {
+                if (apple.style.display === "none") {
+                    return;
+                }
+
+                const appleRect =
+                    apple.getBoundingClientRect();
+
+                const inside =
+                    appleRect.left >= selectionRect.left &&
+                    appleRect.right <= selectionRect.right &&
+                    appleRect.top >= selectionRect.top &&
+                    appleRect.bottom <= selectionRect.bottom;
+
+                if (inside) {
+                    selected.push(apple);
+                }
+            });
+
+            let total = 0;
+
+            selected.forEach(function(apple) {
+                total += Number(apple.dataset.number);
+            });
+
+            if (selected.length === 0) {
+                message.textContent =
+                    "사과를 선택해 주세요! 🍎";
+                return;
+            }
+
+            if (total === 10) {
+                selected.forEach(function(apple) {
+                    apple.remove();
+                });
+
+                apples = apples.filter(function(apple) {
+                    return !selected.includes(apple);
+                });
+
+                score += selected.length;
+
+                scoreText.textContent =
+                    "점수: " + score;
+
+                message.textContent =
+                    "🎉 성공! 합이 10입니다!";
+            } else {
+                message.textContent =
+                    "❌ 합이 " + total +
+                    "입니다. 10을 만들어야 해요!";
+            }
+        });
+    </script>
 
 </body>
 </html>
